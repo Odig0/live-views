@@ -8,7 +8,16 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Habilitar CORS
-  app.enableCors();
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:5174',
+      'http://127.0.0.1:3001',
+      'http://127.0.0.1:5174',
+    ],
+    credentials: true,
+  });
 
   // Servir archivos estáticos de la carpeta public
   app.useStaticAssets(join(__dirname, '..', 'public'));

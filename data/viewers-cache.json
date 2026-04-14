@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-14T16:14:57.904Z",
+  "updatedAt": "2026-04-14T22:20:20.287Z",
   "tiktok": {
     "liquid.sanford": {
       "username": "liquid.sanford",
@@ -24,6 +24,18 @@
       "viewerCount": 39,
       "isLive": true,
       "updatedAt": "2026-04-14T16:14:57.476Z"
+    },
+    "valesportsbr": {
+      "username": "valesportsbr",
+      "viewerCount": 291,
+      "isLive": true,
+      "updatedAt": "2026-04-14T21:04:16.476Z"
+    },
+    "cblol": {
+      "username": "cblol",
+      "viewerCount": 654,
+      "isLive": true,
+      "updatedAt": "2026-04-14T22:20:20.287Z"
     }
   },
   "youtube": {}
