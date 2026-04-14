@@ -1,17 +1,22 @@
-import { Controller, Get, Param, Query, HttpException, HttpStatus, Res, Sse } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  HttpException,
+  HttpStatus,
+  Res,
+} from '@nestjs/common';
 import type { Response } from 'express';
-import { Observable, interval } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { TikTokLiveService } from './tiktok-live.service';
-import { TikTokRealtimeService } from './tiktok-realtime.service';
 import { TikTokCacheService } from './tiktok-cache.service';
+import { ViewersCacheService } from '../viewers-cache/viewers-cache.service';
 
-@Controller('tiktok')
+@Controller('api/v1/tiktok')
 export class TikTokLiveController {
   constructor(
     private readonly tiktokLiveService: TikTokLiveService,
-    private readonly realtimeService: TikTokRealtimeService,
     private readonly cacheService: TikTokCacheService,
+    private readonly viewersCacheService: ViewersCacheService,
   ) {}
 
   /**
@@ -21,10 +26,7 @@ export class TikTokLiveController {
   @Get('viewers')
   async getViewers(@Query('username') username: string) {
     if (!username || username.trim() === '') {
-      throw new HttpException(
-        'Username is required',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException('Username is required', HttpStatus.BAD_REQUEST);
     }
 
     // Remove @ if present
@@ -44,6 +46,12 @@ export class TikTokLiveController {
         );
       }
 
+      await this.viewersCacheService.upsertTikTok({
+        username: cleanUsername,
+        viewerCount: result.viewerCount,
+        isLive: result.isLive,
+      });
+
       return {
         success: true,
         data: result,
@@ -51,113 +59,26 @@ export class TikTokLiveController {
     } catch (error) {
       throw new HttpException(
         {
-          message: error.message || 'Failed to get viewer count',
+          message: getErrorMessage(error, 'Failed to get viewer count'),
           username: cleanUsername,
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-  }
-
-  /**
-   * Get detailed room info for a TikTok user
-   * @param username TikTok username
-   */
-  @Get('room-info')
-  async getRoomInfo(@Query('username') username: string) {
-    if (!username || username.trim() === '') {
-      throw new HttpException(
-        'Username is required',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const cleanUsername = username.replace(/^@/, '');
-
-    try {
-      const result = await this.tiktokLiveService.getRoomInfo(cleanUsername);
-      return {
-        success: true,
-        data: result,
-      };
-    } catch (error) {
-      throw new HttpException(
-        {
-          message: error.message || 'Failed to get room info',
-          username: cleanUsername,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  /**
-   * Server-Sent Events: Stream de viewers en tiempo real
-   * Mantiene la conexión abierta y envía actualizaciones cada 5 segundos
-   * 
-   * GET /tiktok/stream?username=USER
-   */
-  @Sse('stream')
-  streamViewers(@Query('username') username: string, @Res() res: Response) {
-    if (!username || username.trim() === '') {
-      res.statusCode = 400;
-      res.end();
-      return;
-    }
-
-    const cleanUsername = username.replace(/^@/, '');
-
-    // Configurar headers de SSE
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-
-    // Crear stream que obtiene viewers cada 5 segundos
-    return interval(5000).pipe(
-      map(async (i) => {
-        try {
-          const result = await this.tiktokLiveService.getViewerCount(cleanUsername);
-          return {
-            data: JSON.stringify({
-              username: cleanUsername,
-              viewerCount: result.viewerCount,
-              isLive: result.isLive,
-              timestamp: result.timestamp,
-              sequenceNumber: i,
-            }),
-          };
-        } catch (error) {
-          return {
-            data: JSON.stringify({
-              username: cleanUsername,
-              viewerCount: 0,
-              isLive: false,
-              error: error.message,
-              timestamp: new Date(),
-              sequenceNumber: i,
-            }),
-          };
-        }
-      }),
-    );
   }
 
   /**
    * Server-Sent Events: Tiempo Real SIN Rate Limit
-   * 
+    *
    * Conecta UNA SOLA VEZ al iniciar y reutiliza los datos en caché
    * Evita hacer múltiples conexiones que cause rate limiting
-   * 
-   * GET /tiktok/live?username=USER
+    *
+   * GET /api/v1/tiktok/live?username=USER
    */
   @Get('live')
   async streamLive(@Query('username') username: string, @Res() res: Response) {
     if (!username || username.trim() === '') {
-      throw new HttpException(
-        'Username is required',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException('Username is required', HttpStatus.BAD_REQUEST);
     }
 
     const cleanUsername = username.replace(/^@/, '');
@@ -170,7 +91,9 @@ export class TikTokLiveController {
     res.setHeader('Access-Control-Allow-Origin', '*');
 
     // Enviar comentario inicial
-    res.write(': conectado a viewers en tiempo real (datos en caché cada 5s)\n\n');
+    res.write(
+      ': conectado a viewers en tiempo real (datos en caché cada 5s)\n\n',
+    );
 
     let updateCount = 0;
 
@@ -183,6 +106,12 @@ export class TikTokLiveController {
         const cached = this.cacheService.getFromCache(cleanUsername);
 
         if (cached) {
+          void this.viewersCacheService.upsertTikTok({
+            username: cleanUsername,
+            viewerCount: cached.viewerCount,
+            isLive: cached.isLive,
+          });
+
           const message = {
             type: 'viewers_update',
             username: cleanUsername,
@@ -199,7 +128,7 @@ export class TikTokLiveController {
         const errorMessage = {
           type: 'error',
           username: cleanUsername,
-          error: error.message,
+          error: getErrorMessage(error, 'Failed to stream viewers'),
           timestamp: new Date(),
         };
         res.write(`data: ${JSON.stringify(errorMessage)}\n\n`);
@@ -225,26 +154,8 @@ export class TikTokLiveController {
       res.end();
     });
   }
+}
 
-  /**
-   * Health check endpoint
-   */
-  @Get('health')
-  health() {
-    return {
-      status: 'ok',
-      service: 'TikTok Live Viewers',
-    };
-  }
-
-  /**
-   * Get info about currently streamed viewers
-   */
-  @Get('monitoring-stats')
-  getMonitoringStats() {
-    return {
-      monitored: this.realtimeService.getMonitoredStreamers(),
-      totalMonitored: this.realtimeService.getMonitoredStreamers().length,
-    };
-  }
+function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
 }

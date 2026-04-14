@@ -1,0 +1,30 @@
+{
+  "updatedAt": "2026-04-14T16:14:57.904Z",
+  "tiktok": {
+    "liquid.sanford": {
+      "username": "liquid.sanford",
+      "viewerCount": 10514,
+      "isLive": true,
+      "updatedAt": "2026-04-14T16:14:57.563Z"
+    },
+    "lupita": {
+      "username": "lupita",
+      "viewerCount": 0,
+      "isLive": false,
+      "updatedAt": "2026-04-14T16:06:47.406Z"
+    },
+    "americanlup7": {
+      "username": "americanlup7",
+      "viewerCount": 44,
+      "isLive": true,
+      "updatedAt": "2026-04-14T16:14:57.904Z"
+    },
+    "soyharry17": {
+      "username": "soyharry17",
+      "viewerCount": 39,
+      "isLive": true,
+      "updatedAt": "2026-04-14T16:14:57.476Z"
+    }
+  },
+  "youtube": {}
+}

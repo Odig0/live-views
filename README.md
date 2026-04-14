@@ -26,6 +26,7 @@
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository con un **módulo de TikTok Live Viewers** integrado.
 
 Este proyecto permite scrapear el número de viewers en vivo de un live de TikTok mediante una API REST simple.
+Tambien incluye un modulo de YouTube Live Viewers con REST y WebSocket.
 
 ### 🎯 Características
 
@@ -58,6 +59,12 @@ $ npm run start:prod
 
 El servidor estará disponible en `http://localhost:3000`
 
+### Base URL versionada
+
+```text
+http://localhost:3000/api/v1
+```
+
 ### 3. Probar el módulo
 
 ```bash
@@ -72,13 +79,21 @@ curl "http://localhost:3000/tiktok/health"
 
 Ver [TIKTOK_MODULE_README.md](./TIKTOK_MODULE_README.md) para documentación completa.
 
+## 📚 Documentación del Módulo YouTube Live
+
+Ver [YOUTUBE_MODULE_README.md](./YOUTUBE_MODULE_README.md) para REST y tiempo real por WebSocket.
+
 ### Endpoints Principales
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| GET | `/tiktok/viewers?username=USER` | Obtener viewers actuales |
-| GET | `/tiktok/room-info?username=USER` | Obtener info detallada del room |
-| GET | `/tiktok/health` | Health check |
+| GET | `/api/v1/tiktok/viewers?username=USER` | Obtener viewers actuales |
+| GET | `/api/v1/tiktok/live?username=USER` | Stream SSE con viewers actuales |
+| GET | `/api/v1/youtube/live-viewers?url=YOUTUBE_URL` | Obtener concurrent viewers del live |
+| GET | `/api/v1/youtube/live?url=YOUTUBE_URL` | Stream SSE con concurrent viewers cada 25s |
+| GET | `/api/v1/viewers-cache` | Leer snapshot JSON de TikTok + YouTube |
+| GET | `/api/v1/viewers-cache/tiktok` | Leer snapshot JSON solo TikTok |
+| GET | `/api/v1/viewers-cache/youtube` | Leer snapshot JSON solo YouTube |
 
 ### Ejemplo de Respuesta
 
