@@ -18,10 +18,22 @@ interface YoutubeViewerSnapshot {
   updatedAt: string;
 }
 
+interface FacebookViewerSnapshot {
+  pageId: string;
+  videoId: string;
+  concurrentViewers: number;
+  title?: string;
+  status?: string;
+  permalinkUrl?: string;
+  isLive: boolean;
+  updatedAt: string;
+}
+
 interface ViewersCacheFile {
   updatedAt: string;
   tiktok: Record<string, TikTokViewerSnapshot>;
   youtube: Record<string, YoutubeViewerSnapshot>;
+  facebook: Record<string, FacebookViewerSnapshot>;
 }
 
 @Injectable()
@@ -34,6 +46,9 @@ export class ViewersCacheService implements OnModuleInit {
   async onModuleInit() {
     await this.ensureFile();
     this.snapshot = await this.readFromDisk();
+
+    // Normalize persisted shape on startup in case file had missing keys.
+    await this.persist();
   }
 
   async upsertTikTok(data: {
@@ -72,31 +87,81 @@ export class ViewersCacheService implements OnModuleInit {
     await this.persist();
   }
 
+  async upsertFacebook(data: {
+    pageId: string;
+    videoId: string;
+    concurrentViewers: number;
+    title?: string;
+    status?: string;
+    permalinkUrl?: string;
+    isLive: boolean;
+  }) {
+    const key = data.videoId;
+    this.snapshot.facebook[key] = {
+      pageId: data.pageId,
+      videoId: key,
+      concurrentViewers: data.concurrentViewers,
+      title: data.title,
+      status: data.status,
+      permalinkUrl: data.permalinkUrl,
+      isLive: data.isLive,
+      updatedAt: new Date().toISOString(),
+    };
+    this.snapshot.updatedAt = new Date().toISOString();
+    await this.persist();
+  }
+
   async readSnapshot() {
-    return this.readFromDisk();
+    const data = await this.readFromDisk();
+    return {
+      updatedAt: data.updatedAt,
+      tiktok: Object.values(data.tiktok),
+      youtube: Object.values(data.youtube),
+      facebook: Object.values(data.facebook),
+    };
   }
 
   async readTikTokSnapshot() {
     const data = await this.readFromDisk();
-    return data.tiktok;
+    return Object.values(data.tiktok);
   }
 
   async readYoutubeSnapshot() {
     const data = await this.readFromDisk();
-    return data.youtube;
+    return Object.values(data.youtube);
+  }
+
+  async readFacebookSnapshot() {
+    const data = await this.readFromDisk();
+    return Object.values(data.facebook);
   }
 
   private async ensureFile() {
     await mkdir(dirname(this.filePath), { recursive: true });
 
     try {
-      await readFile(this.filePath, 'utf8');
+      const content = await readFile(this.filePath, 'utf8');
+
+      // If file exists but is empty, recreate base structure.
+      if (content.trim() === '') {
+        await this.writeBaseSnapshot();
+        this.logger.warn(
+          `Cache file was empty. Recreated base structure at ${this.filePath}`,
+        );
+        return;
+      }
+
+      // If file exists but has invalid JSON, recreate base structure.
+      try {
+        JSON.parse(content);
+      } catch {
+        await this.writeBaseSnapshot();
+        this.logger.warn(
+          `Cache file had invalid JSON. Recreated base structure at ${this.filePath}`,
+        );
+      }
     } catch {
-      await writeFile(
-        this.filePath,
-        `${JSON.stringify(this.emptySnapshot(), null, 2)}\n`,
-        'utf8',
-      );
+      await this.writeBaseSnapshot();
       this.logger.log(`Created viewers cache file at ${this.filePath}`);
     }
   }
@@ -110,6 +175,7 @@ export class ViewersCacheService implements OnModuleInit {
         updatedAt: parsed.updatedAt || new Date().toISOString(),
         tiktok: parsed.tiktok || {},
         youtube: parsed.youtube || {},
+        facebook: parsed.facebook || {},
       };
     } catch {
       return this.emptySnapshot();
@@ -135,6 +201,15 @@ export class ViewersCacheService implements OnModuleInit {
       updatedAt: new Date().toISOString(),
       tiktok: {},
       youtube: {},
+      facebook: {},
     };
+  }
+
+  private async writeBaseSnapshot() {
+    await writeFile(
+      this.filePath,
+      `${JSON.stringify(this.emptySnapshot(), null, 2)}\n`,
+      'utf8',
+    );
   }
 }

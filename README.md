@@ -26,7 +26,7 @@
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository con un **módulo de TikTok Live Viewers** integrado.
 
 Este proyecto permite scrapear el número de viewers en vivo de un live de TikTok mediante una API REST simple.
-Tambien incluye un modulo de YouTube Live Viewers con REST y WebSocket.
+Tambien incluye modulos de YouTube Live Viewers y Facebook Live Viewers con REST y SSE.
 
 ### 🎯 Características
 
@@ -91,9 +91,22 @@ Ver [YOUTUBE_MODULE_README.md](./YOUTUBE_MODULE_README.md) para REST y tiempo re
 | GET | `/api/v1/tiktok/live?username=USER` | Stream SSE con viewers actuales |
 | GET | `/api/v1/youtube/live-viewers?url=YOUTUBE_URL` | Obtener concurrent viewers del live |
 | GET | `/api/v1/youtube/live?url=YOUTUBE_URL` | Stream SSE con concurrent viewers cada 25s |
+| GET | `/api/v1/facebook/live-viewers` | Obtener concurrent viewers del live activo en Facebook |
+| GET | `/api/v1/facebook/live-viewers?videoId=VIDEO_ID` | Obtener concurrent viewers de un live especifico de Facebook |
+| GET | `/api/v1/facebook/live?videoId=VIDEO_ID` | Stream SSE de concurrent viewers de Facebook |
 | GET | `/api/v1/viewers-cache` | Leer snapshot JSON de TikTok + YouTube |
 | GET | `/api/v1/viewers-cache/tiktok` | Leer snapshot JSON solo TikTok |
-| GET | `/api/v1/viewers-cache/youtube` | Leer snapshot JSON solo YouTube |
+| GET | `/api/v1/viewers-cache/youtube` | Stream SSE de viewers solo YouTube |
+| GET | `/api/v1/viewers-cache/youtube/snapshot` | Leer snapshot JSON solo YouTube |
+| GET | `/api/v1/viewers-cache/facebook` | Leer snapshot JSON solo Facebook |
+
+### Variables de entorno para Facebook
+
+```env
+FACEBOOK_ACCESS_TOKEN=EAAB...
+FACEBOOK_PAGE_ID=123456789012345
+FACEBOOK_GRAPH_API_VERSION=v23.0
+```
 
 ### Ejemplo de Respuesta
 
