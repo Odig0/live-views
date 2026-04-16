@@ -108,6 +108,17 @@ FACEBOOK_PAGE_ID=123456789012345
 FACEBOOK_GRAPH_API_VERSION=v23.0
 ```
 
+### Variables de entorno para PostgreSQL
+
+```env
+DATABASE_URL=postgresql://postgres:password@localhost:5432/live_views
+PGSSLMODE=disable
+```
+
+Si no usas `DATABASE_URL`, también puedes configurar `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD` y `PGDATABASE`.
+
+El sistema crea automáticamente la tabla `viewer_history` para guardar el historial de TikTok y YouTube cada 3 minutos mientras el recurso siga siendo monitoreado.
+
 ### Ejemplo de Respuesta
 
 ```bash

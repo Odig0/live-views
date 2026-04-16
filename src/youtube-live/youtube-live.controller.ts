@@ -11,6 +11,7 @@ import { YoutubeLiveService } from './youtube-live.service';
 import { YoutubeLiveError } from './youtube-live.types';
 import { YoutubeWebsocketManagerService } from './youtube-websocket-manager.service';
 import { ViewersCacheService } from '../viewers-cache/viewers-cache.service';
+import { ViewersHistoryService } from '../viewers-history/viewers-history.service';
 
 @Controller('api/v1/youtube')
 export class YoutubeLiveController {
@@ -18,6 +19,7 @@ export class YoutubeLiveController {
     private readonly youtubeLiveService: YoutubeLiveService,
     private readonly youtubeWsManager: YoutubeWebsocketManagerService,
     private readonly viewersCacheService: ViewersCacheService,
+    private readonly viewersHistoryService: ViewersHistoryService,
   ) {}
 
   @Get('live-viewers')
@@ -42,6 +44,21 @@ export class YoutubeLiveController {
         channelTitle: data.channelTitle,
         isLive: data.isLive,
       });
+
+      await this.viewersHistoryService.recordYoutubeSnapshot({
+        videoId: data.videoId,
+        concurrentViewers: data.concurrentViewers,
+        title: data.title,
+        channelTitle: data.channelTitle,
+        isLive: data.isLive,
+        sourceUrl: url,
+        capturedAt: data.fetchedAt,
+        metadata: {
+          route: '/api/v1/youtube/live-viewers',
+        },
+      });
+
+      this.viewersHistoryService.ensureYoutubeTracking(data.videoId);
 
       return {
         success: true,

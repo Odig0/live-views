@@ -10,6 +10,7 @@ import type { Response } from 'express';
 import { TikTokLiveService } from './tiktok-live.service';
 import { TikTokCacheService } from './tiktok-cache.service';
 import { ViewersCacheService } from '../viewers-cache/viewers-cache.service';
+import { ViewersHistoryService } from '../viewers-history/viewers-history.service';
 
 @Controller('api/v1/tiktok')
 export class TikTokLiveController {
@@ -17,6 +18,7 @@ export class TikTokLiveController {
     private readonly tiktokLiveService: TikTokLiveService,
     private readonly cacheService: TikTokCacheService,
     private readonly viewersCacheService: ViewersCacheService,
+    private readonly viewersHistoryService: ViewersHistoryService,
   ) {}
 
   /**
@@ -51,6 +53,19 @@ export class TikTokLiveController {
         viewerCount: result.viewerCount,
         isLive: result.isLive,
       });
+
+      await this.viewersHistoryService.recordTikTokSnapshot({
+        username: cleanUsername,
+        viewerCount: result.viewerCount,
+        isLive: result.isLive,
+        capturedAt: result.timestamp,
+        metadata: {
+          route: '/api/v1/tiktok/viewers',
+        },
+      });
+
+      this.viewersHistoryService.ensureTikTokTracking(cleanUsername);
+      void this.cacheService.startMonitoring(cleanUsername);
 
       return {
         success: true,
