@@ -1,13 +1,22 @@
 {
-  "updatedAt": "2026-04-15T22:38:45.552Z",
+  "updatedAt": "2026-04-17T16:01:36.631Z",
   "tiktok": {
-    "jhonnyplatacaba": {
-      "username": "jhonnyplatacaba",
-      "viewerCount": 71,
+    "pubgmobile.np.official": {
+      "username": "pubgmobile.np.official",
+      "viewerCount": 2986,
       "isLive": true,
-      "updatedAt": "2026-04-15T22:38:45.552Z"
+      "updatedAt": "2026-04-17T15:59:46.700Z"
     }
   },
-  "youtube": {},
+  "youtube": {
+    "_cok5SgTh1c": {
+      "videoId": "_cok5SgTh1c",
+      "concurrentViewers": 5064,
+      "title": "LIVE: NBC News NOW - April 17",
+      "channelTitle": "NBC News",
+      "isLive": true,
+      "updatedAt": "2026-04-17T16:01:36.631Z"
+    }
+  },
   "facebook": {}
 }

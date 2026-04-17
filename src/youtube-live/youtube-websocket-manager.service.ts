@@ -6,14 +6,24 @@ import { YoutubeLiveError, YoutubeLiveViewersData } from './youtube-live.types';
 interface VideoPollingState {
   videoId: string;
   clients: Map<string, (payload: YoutubeWsUpdatePayload) => void>;
+  updateCount: number;
   intervalId?: NodeJS.Timeout;
   inFlight?: Promise<YoutubeLiveViewersData | null>;
 }
 
 export interface YoutubeWsUpdatePayload {
-  type: 'live-viewers-update' | 'live-ended' | 'error';
-  videoId: string;
-  data?: YoutubeLiveViewersData;
+  type: 'live-viewers-update' | 'live-ended' | 'error' | 'subscribed';
+  platform?: 'youtube';
+  referenceId?: string;
+  videoId?: string;
+  data?:
+    | YoutubeLiveViewersData
+    | (YoutubeLiveViewersData & {
+        viewerCount: number;
+        timestamp: Date;
+      });
+  updateNumber?: number;
+  cached?: boolean;
   error?: {
     code: string;
     message: string;
@@ -41,6 +51,7 @@ export class YoutubeWebsocketManagerService implements OnModuleDestroy {
       state = {
         videoId,
         clients: new Map(),
+        updateCount: 0,
       };
       this.states.set(videoId, state);
     }
@@ -187,11 +198,20 @@ export class YoutubeWebsocketManagerService implements OnModuleDestroy {
       return;
     }
 
+    const sentAt = new Date();
+
     const payload: YoutubeWsUpdatePayload = {
       type: 'live-viewers-update',
-      videoId,
-      data,
-      sentAt: new Date(),
+      platform: 'youtube',
+      referenceId: videoId,
+      data: {
+        ...data,
+        viewerCount: data.concurrentViewers,
+        timestamp: sentAt,
+      },
+      updateNumber: ++state.updateCount,
+      cached: false,
+      sentAt,
     };
 
     void this.viewersCacheService.upsertYoutube({

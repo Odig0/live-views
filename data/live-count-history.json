@@ -1,0 +1,646 @@
+{
+  "updatedAt": "2026-04-17T16:12:37.327Z",
+  "nextId": 81,
+  "live_count": [
+    {
+      "id": 1,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5563,
+      "recorded_at": "2026-04-17T15:27:19.203Z"
+    },
+    {
+      "id": 2,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 1820,
+      "recorded_at": "2026-04-17T15:27:24.263Z"
+    },
+    {
+      "id": 3,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5559,
+      "recorded_at": "2026-04-17T15:27:44.208Z"
+    },
+    {
+      "id": 4,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 1898,
+      "recorded_at": "2026-04-17T15:27:54.432Z"
+    },
+    {
+      "id": 5,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5552,
+      "recorded_at": "2026-04-17T15:28:09.216Z"
+    },
+    {
+      "id": 6,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 1957,
+      "recorded_at": "2026-04-17T15:28:22.249Z"
+    },
+    {
+      "id": 7,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5591,
+      "recorded_at": "2026-04-17T15:28:34.731Z"
+    },
+    {
+      "id": 8,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2010,
+      "recorded_at": "2026-04-17T15:28:52.208Z"
+    },
+    {
+      "id": 9,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2048,
+      "recorded_at": "2026-04-17T15:29:22.096Z"
+    },
+    {
+      "id": 10,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5567,
+      "recorded_at": "2026-04-17T15:29:24.583Z"
+    },
+    {
+      "id": 11,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5598,
+      "recorded_at": "2026-04-17T15:29:49.752Z"
+    },
+    {
+      "id": 12,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2094,
+      "recorded_at": "2026-04-17T15:29:54.195Z"
+    },
+    {
+      "id": 13,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5589,
+      "recorded_at": "2026-04-17T15:30:14.334Z"
+    },
+    {
+      "id": 14,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2140,
+      "recorded_at": "2026-04-17T15:30:24.365Z"
+    },
+    {
+      "id": 15,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5572,
+      "recorded_at": "2026-04-17T15:30:39.232Z"
+    },
+    {
+      "id": 16,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2169,
+      "recorded_at": "2026-04-17T15:30:52.954Z"
+    },
+    {
+      "id": 17,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5585,
+      "recorded_at": "2026-04-17T15:31:05.198Z"
+    },
+    {
+      "id": 18,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2169,
+      "recorded_at": "2026-04-17T15:31:22.249Z"
+    },
+    {
+      "id": 19,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5119,
+      "recorded_at": "2026-04-17T15:31:53.978Z"
+    },
+    {
+      "id": 20,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2210,
+      "recorded_at": "2026-04-17T15:31:52.074Z"
+    },
+    {
+      "id": 21,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 4301,
+      "recorded_at": "2026-04-17T15:32:19.241Z"
+    },
+    {
+      "id": 22,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2202,
+      "recorded_at": "2026-04-17T15:32:24.477Z"
+    },
+    {
+      "id": 23,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 4297,
+      "recorded_at": "2026-04-17T15:32:44.276Z"
+    },
+    {
+      "id": 24,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2231,
+      "recorded_at": "2026-04-17T15:32:54.225Z"
+    },
+    {
+      "id": 25,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 4345,
+      "recorded_at": "2026-04-17T15:33:10.294Z"
+    },
+    {
+      "id": 26,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2268,
+      "recorded_at": "2026-04-17T15:33:22.255Z"
+    },
+    {
+      "id": 27,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 4448,
+      "recorded_at": "2026-04-17T15:33:34.482Z"
+    },
+    {
+      "id": 28,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2285,
+      "recorded_at": "2026-04-17T15:33:52.595Z"
+    },
+    {
+      "id": 29,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2331,
+      "recorded_at": "2026-04-17T15:34:22.137Z"
+    },
+    {
+      "id": 30,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5011,
+      "recorded_at": "2026-04-17T15:34:24.517Z"
+    },
+    {
+      "id": 31,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2345,
+      "recorded_at": "2026-04-17T15:34:54.122Z"
+    },
+    {
+      "id": 32,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5134,
+      "recorded_at": "2026-04-17T15:34:49.821Z"
+    },
+    {
+      "id": 33,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5265,
+      "recorded_at": "2026-04-17T15:35:14.307Z"
+    },
+    {
+      "id": 34,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2381,
+      "recorded_at": "2026-04-17T15:35:24.205Z"
+    },
+    {
+      "id": 35,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5361,
+      "recorded_at": "2026-04-17T15:35:39.301Z"
+    },
+    {
+      "id": 36,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2423,
+      "recorded_at": "2026-04-17T15:35:54.024Z"
+    },
+    {
+      "id": 37,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2441,
+      "recorded_at": "2026-04-17T15:36:22.850Z"
+    },
+    {
+      "id": 38,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5391,
+      "recorded_at": "2026-04-17T15:36:04.446Z"
+    },
+    {
+      "id": 39,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5406,
+      "recorded_at": "2026-04-17T15:36:54.401Z"
+    },
+    {
+      "id": 40,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2492,
+      "recorded_at": "2026-04-17T15:36:54.513Z"
+    },
+    {
+      "id": 41,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5404,
+      "recorded_at": "2026-04-17T15:37:19.743Z"
+    },
+    {
+      "id": 42,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2547,
+      "recorded_at": "2026-04-17T15:37:22.188Z"
+    },
+    {
+      "id": 43,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5424,
+      "recorded_at": "2026-04-17T15:37:45.266Z"
+    },
+    {
+      "id": 44,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2577,
+      "recorded_at": "2026-04-17T15:37:53.943Z"
+    },
+    {
+      "id": 45,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5410,
+      "recorded_at": "2026-04-17T15:38:09.685Z"
+    },
+    {
+      "id": 46,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2618,
+      "recorded_at": "2026-04-17T15:38:22.140Z"
+    },
+    {
+      "id": 47,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2654,
+      "recorded_at": "2026-04-17T15:38:52.365Z"
+    },
+    {
+      "id": 48,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5410,
+      "recorded_at": "2026-04-17T15:38:34.429Z"
+    },
+    {
+      "id": 49,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5394,
+      "recorded_at": "2026-04-17T15:39:24.433Z"
+    },
+    {
+      "id": 50,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2631,
+      "recorded_at": "2026-04-17T15:39:24.522Z"
+    },
+    {
+      "id": 51,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 4566,
+      "recorded_at": "2026-04-17T15:39:49.432Z"
+    },
+    {
+      "id": 52,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2627,
+      "recorded_at": "2026-04-17T15:39:54.234Z"
+    },
+    {
+      "id": 53,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 4191,
+      "recorded_at": "2026-04-17T15:40:14.485Z"
+    },
+    {
+      "id": 54,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2633,
+      "recorded_at": "2026-04-17T15:40:24.001Z"
+    },
+    {
+      "id": 55,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 4159,
+      "recorded_at": "2026-04-17T15:40:40.154Z"
+    },
+    {
+      "id": 56,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2651,
+      "recorded_at": "2026-04-17T15:40:54.545Z"
+    },
+    {
+      "id": 57,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 4282,
+      "recorded_at": "2026-04-17T15:41:04.473Z"
+    },
+    {
+      "id": 58,
+      "live_count_id": 8,
+      "channel_name": "pubgmobile.np.official",
+      "platform": "tiktok",
+      "view_count": 2659,
+      "recorded_at": "2026-04-17T15:41:24.422Z"
+    },
+    {
+      "id": 59,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5081,
+      "recorded_at": "2026-04-17T16:02:06.305Z"
+    },
+    {
+      "id": 60,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5128,
+      "recorded_at": "2026-04-17T16:02:36.417Z"
+    },
+    {
+      "id": 61,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5125,
+      "recorded_at": "2026-04-17T16:03:06.325Z"
+    },
+    {
+      "id": 62,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5149,
+      "recorded_at": "2026-04-17T16:03:36.322Z"
+    },
+    {
+      "id": 63,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5149,
+      "recorded_at": "2026-04-17T16:04:06.340Z"
+    },
+    {
+      "id": 64,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5139,
+      "recorded_at": "2026-04-17T16:04:36.349Z"
+    },
+    {
+      "id": 65,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5178,
+      "recorded_at": "2026-04-17T16:05:06.506Z"
+    },
+    {
+      "id": 66,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5194,
+      "recorded_at": "2026-04-17T16:05:36.610Z"
+    },
+    {
+      "id": 67,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5192,
+      "recorded_at": "2026-04-17T16:06:06.405Z"
+    },
+    {
+      "id": 68,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5189,
+      "recorded_at": "2026-04-17T16:06:36.522Z"
+    },
+    {
+      "id": 69,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5188,
+      "recorded_at": "2026-04-17T16:07:06.436Z"
+    },
+    {
+      "id": 70,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5194,
+      "recorded_at": "2026-04-17T16:07:37.444Z"
+    },
+    {
+      "id": 71,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5201,
+      "recorded_at": "2026-04-17T16:08:06.423Z"
+    },
+    {
+      "id": 72,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5223,
+      "recorded_at": "2026-04-17T16:08:36.516Z"
+    },
+    {
+      "id": 73,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5233,
+      "recorded_at": "2026-04-17T16:09:06.434Z"
+    },
+    {
+      "id": 74,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5251,
+      "recorded_at": "2026-04-17T16:09:36.414Z"
+    },
+    {
+      "id": 75,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5248,
+      "recorded_at": "2026-04-17T16:10:06.441Z"
+    },
+    {
+      "id": 76,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5270,
+      "recorded_at": "2026-04-17T16:10:36.425Z"
+    },
+    {
+      "id": 77,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5262,
+      "recorded_at": "2026-04-17T16:11:06.551Z"
+    },
+    {
+      "id": 78,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5234,
+      "recorded_at": "2026-04-17T16:11:37.932Z"
+    },
+    {
+      "id": 79,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5221,
+      "recorded_at": "2026-04-17T16:12:06.551Z"
+    },
+    {
+      "id": 80,
+      "live_count_id": 4,
+      "channel_name": "NBC News",
+      "platform": "youtube",
+      "view_count": 5223,
+      "recorded_at": "2026-04-17T16:12:36.451Z"
+    }
+  ]
+}

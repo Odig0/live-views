@@ -114,6 +114,7 @@ export class TikTokLiveController {
 
     // PASO 1: Conectar UNA SOLA VEZ al inicio
     await this.cacheService.startMonitoring(cleanUsername);
+    this.viewersHistoryService.ensureTikTokTracking(cleanUsername);
 
     const sendUpdate = () => {
       try {
@@ -127,12 +128,18 @@ export class TikTokLiveController {
             isLive: cached.isLive,
           });
 
+          const sentAt = new Date();
           const message = {
-            type: 'viewers_update',
-            username: cleanUsername,
-            viewerCount: cached.viewerCount,
-            isLive: cached.isLive,
-            timestamp: new Date(), // Timestamp actual
+            type: 'live-viewers-update',
+            platform: 'tiktok',
+            referenceId: cleanUsername,
+            data: {
+              username: cleanUsername,
+              viewerCount: cached.viewerCount,
+              isLive: cached.isLive,
+              timestamp: sentAt,
+            },
+            sentAt,
             updateNumber: ++updateCount,
             cached: true,
           };

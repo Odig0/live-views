@@ -110,6 +110,9 @@ export class YoutubeLiveController {
     res.write(': connected to youtube live viewers SSE\n\n');
 
     try {
+      const requestedVideoId = this.youtubeLiveService.extractVideoId(url);
+      this.viewersHistoryService.ensureYoutubeTracking(requestedVideoId);
+
       const subscription = await this.youtubeWsManager.subscribe(
         clientId,
         url,

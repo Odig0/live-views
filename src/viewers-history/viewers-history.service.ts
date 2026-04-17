@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { PostgresService } from '../database/postgres.service';
 import { TikTokCacheService } from '../tiktok-live/tiktok-cache.service';
 import { YoutubeLiveService } from '../youtube-live/youtube-live.service';
+import { LiveCountJsonHistoryService } from './live-count-json-history.service';
 
 interface TrackerState {
   key: string;
@@ -13,12 +14,13 @@ interface TrackerState {
 @Injectable()
 export class ViewersHistoryService implements OnModuleDestroy {
   private readonly logger = new Logger(ViewersHistoryService.name);
-  private readonly trackingIntervalMs = 3 * 60 * 1000;
+  private readonly trackingIntervalMs = 30_000;
   private readonly inactivityTimeoutMs = 15 * 60 * 1000;
   private readonly trackers = new Map<string, TrackerState>();
 
   constructor(
     private readonly postgresService: PostgresService,
+    private readonly liveCountJsonHistoryService: LiveCountJsonHistoryService,
     private readonly tiktokCacheService: TikTokCacheService,
     private readonly youtubeLiveService: YoutubeLiveService,
   ) {}
@@ -32,21 +34,41 @@ export class ViewersHistoryService implements OnModuleDestroy {
     metadata?: Record<string, unknown>;
   }) {
     const username = normalizeTikTokUsername(data.username);
+    const recordedAt = data.capturedAt ?? new Date();
 
     try {
-      await this.postgresService.insertViewerHistory({
-        source: 'tiktok',
-        referenceKey: username,
-        displayName: username,
-        sourceUrl: data.sourceUrl,
-        viewerCount: data.viewerCount,
-        isLive: data.isLive,
-        capturedAt: data.capturedAt ?? new Date(),
-        metadata: {
-          ...data.metadata,
-          username,
-        },
+      this.logger.debug(`Recording TikTok snapshot for ${username}: ${data.viewerCount} viewers`);
+
+      const liveCountId = await this.postgresService.insertViewerHistory({
+        platform: 'tiktok',
+        channelName: username,
+        viewCount: data.viewerCount,
+        updatedAt: recordedAt,
       });
+
+      this.logger.debug(`insertViewerHistory returned liveCountId: ${liveCountId}`);
+
+      if (liveCountId !== null) {
+        await this.postgresService.insertLiveCountHistory({
+          liveCountId,
+          channelName: username,
+          platform: 'tiktok',
+          viewCount: data.viewerCount,
+          recordedAt,
+        });
+
+        await this.liveCountJsonHistoryService.appendRecord({
+          liveCountId,
+          channelName: username,
+          platform: 'tiktok',
+          viewCount: data.viewerCount,
+          recordedAt,
+        });
+
+        this.logger.log(`✓ TikTok snapshot recorded for ${username}: ${data.viewerCount} viewers`);
+      } else {
+        this.logger.warn(`Failed to get liveCountId for TikTok user ${username}`);
+      }
     } catch (error) {
       this.logger.error(
         `Failed to persist TikTok history for ${username}: ${error instanceof Error ? error.message : 'unknown error'}`,
@@ -64,22 +86,41 @@ export class ViewersHistoryService implements OnModuleDestroy {
     capturedAt?: Date;
     metadata?: Record<string, unknown>;
   }) {
+    const recordedAt = data.capturedAt ?? new Date();
+
     try {
-      await this.postgresService.insertViewerHistory({
-        source: 'youtube',
-        referenceKey: data.videoId,
-        displayName: data.title ?? data.channelTitle ?? data.videoId,
-        sourceUrl: data.sourceUrl,
-        viewerCount: data.concurrentViewers,
-        isLive: data.isLive,
-        capturedAt: data.capturedAt ?? new Date(),
-        metadata: {
-          ...data.metadata,
-          videoId: data.videoId,
-          title: data.title,
-          channelTitle: data.channelTitle,
-        },
+      this.logger.debug(`Recording YouTube snapshot for ${data.videoId}: ${data.concurrentViewers} viewers`);
+
+      const liveCountId = await this.postgresService.insertViewerHistory({
+        platform: 'youtube',
+        channelName: data.channelTitle ?? data.videoId,
+        viewCount: data.concurrentViewers,
+        updatedAt: recordedAt,
       });
+
+      this.logger.debug(`insertViewerHistory returned liveCountId: ${liveCountId}`);
+
+      if (liveCountId !== null) {
+        await this.postgresService.insertLiveCountHistory({
+          liveCountId,
+          channelName: data.channelTitle ?? data.videoId,
+          platform: 'youtube',
+          viewCount: data.concurrentViewers,
+          recordedAt,
+        });
+
+        await this.liveCountJsonHistoryService.appendRecord({
+          liveCountId,
+          channelName: data.channelTitle ?? data.videoId,
+          platform: 'youtube',
+          viewCount: data.concurrentViewers,
+          recordedAt,
+        });
+
+        this.logger.log(`✓ YouTube snapshot recorded for ${data.videoId}: ${data.concurrentViewers} viewers`);
+      } else {
+        this.logger.warn(`Failed to get liveCountId for YouTube video ${data.videoId}`);
+      }
     } catch (error) {
       this.logger.error(
         `Failed to persist YouTube history for ${data.videoId}: ${error instanceof Error ? error.message : 'unknown error'}`,
@@ -96,6 +137,8 @@ export class ViewersHistoryService implements OnModuleDestroy {
       return;
     }
 
+    void this.captureTikTokSnapshot(key, trackerId);
+
     const intervalId = setInterval(() => {
       void this.captureTikTokSnapshot(key, trackerId);
     }, this.trackingIntervalMs);
@@ -107,7 +150,7 @@ export class ViewersHistoryService implements OnModuleDestroy {
       intervalId,
     });
 
-    this.logger.log(`Tracking TikTok history for ${key} every 3 minutes`);
+    this.logger.log(`Tracking TikTok history for ${key} every 30 seconds`);
   }
 
   ensureYoutubeTracking(videoId: string) {
@@ -118,6 +161,8 @@ export class ViewersHistoryService implements OnModuleDestroy {
     if (this.trackers.has(trackerId)) {
       return;
     }
+
+    void this.captureYoutubeSnapshot(key, trackerId);
 
     const intervalId = setInterval(() => {
       void this.captureYoutubeSnapshot(key, trackerId);
@@ -130,7 +175,7 @@ export class ViewersHistoryService implements OnModuleDestroy {
       intervalId,
     });
 
-    this.logger.log(`Tracking YouTube history for ${key} every 3 minutes`);
+    this.logger.log(`Tracking YouTube history for ${key} every 30 seconds`);
   }
 
   onModuleDestroy() {

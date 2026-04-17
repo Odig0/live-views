@@ -2,14 +2,18 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/commo
 import { Pool, type PoolConfig } from 'pg';
 
 export interface ViewerHistoryRecord {
-  source: 'tiktok' | 'youtube';
-  referenceKey: string;
-  viewerCount: number;
-  isLive: boolean;
-  capturedAt: Date;
-  displayName?: string;
-  sourceUrl?: string;
-  metadata?: Record<string, unknown>;
+  platform: 'tiktok' | 'youtube';
+  channelName: string;
+  viewCount: number;
+  updatedAt: Date;
+}
+
+export interface LiveCountHistoryRecord {
+  liveCountId: number;
+  channelName: string;
+  platform: 'tiktok' | 'youtube';
+  viewCount: number;
+  recordedAt: Date;
 }
 
 @Injectable()
@@ -34,28 +38,48 @@ export class PostgresService implements OnModuleInit, OnModuleDestroy {
   }
 
   async insertViewerHistory(record: ViewerHistoryRecord) {
-    await this.pool.query(
+    const result = await this.pool.query<{ id: number }>(
       `
-        INSERT INTO viewer_history (
-          source,
-          reference_key,
-          display_name,
-          source_url,
-          viewer_count,
-          is_live,
-          metadata,
-          captured_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8)
+        INSERT INTO live_count (
+          channel_name,
+          platform,
+          view_count,
+          updated_at
+        ) VALUES ($1, $2, $3, $4)
+        ON CONFLICT (channel_name, platform)
+        DO UPDATE SET
+          view_count = EXCLUDED.view_count,
+          updated_at = EXCLUDED.updated_at
+        RETURNING id
       `,
       [
-        record.source,
-        record.referenceKey,
-        record.displayName ?? null,
-        record.sourceUrl ?? null,
-        record.viewerCount,
-        record.isLive,
-        JSON.stringify(record.metadata ?? {}),
-        record.capturedAt,
+        record.channelName,
+        record.platform,
+        record.viewCount,
+        record.updatedAt,
+      ],
+    );
+
+    return result.rows[0]?.id ?? null;
+  }
+
+  async insertLiveCountHistory(record: LiveCountHistoryRecord) {
+    await this.pool.query(
+      `
+        INSERT INTO live_count_history (
+          live_count_id,
+          channel_name,
+          platform,
+          view_count,
+          recorded_at
+        ) VALUES ($1, $2, $3, $4, $5)
+      `,
+      [
+        record.liveCountId,
+        record.channelName,
+        record.platform,
+        record.viewCount,
+        record.recordedAt,
       ],
     );
   }
@@ -94,28 +118,48 @@ export class PostgresService implements OnModuleInit, OnModuleDestroy {
 
   private async ensureSchema() {
     await this.pool.query(`
-      CREATE TABLE IF NOT EXISTS viewer_history (
-        id BIGSERIAL PRIMARY KEY,
-        source TEXT NOT NULL,
-        reference_key TEXT NOT NULL,
-        display_name TEXT,
-        source_url TEXT,
-        viewer_count INTEGER NOT NULL,
-        is_live BOOLEAN NOT NULL,
-        metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-        captured_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      CREATE TABLE IF NOT EXISTS live_count (
+        id SERIAL PRIMARY KEY,
+        channel_name VARCHAR(255) NOT NULL,
+        platform VARCHAR(50) NOT NULL,
+        view_count INT NOT NULL,
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        UNIQUE (channel_name, platform)
       )
     `);
 
     await this.pool.query(`
-      CREATE INDEX IF NOT EXISTS idx_viewer_history_source_reference_captured_at
-      ON viewer_history (source, reference_key, captured_at DESC)
+      CREATE TABLE IF NOT EXISTS live_count_history (
+        id SERIAL PRIMARY KEY,
+        live_count_id INT NOT NULL,
+        channel_name VARCHAR(255) NOT NULL,
+        platform VARCHAR(50) NOT NULL,
+        view_count INT NOT NULL,
+        recorded_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        CONSTRAINT fk_live_count_history_live_count
+          FOREIGN KEY (live_count_id) REFERENCES live_count (id)
+          ON DELETE CASCADE
+      )
     `);
 
     await this.pool.query(`
-      CREATE INDEX IF NOT EXISTS idx_viewer_history_captured_at
-      ON viewer_history (captured_at DESC)
+      CREATE INDEX IF NOT EXISTS idx_live_count_platform_channel_updated_at
+      ON live_count (platform, channel_name, updated_at DESC)
+    `);
+
+    await this.pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_live_count_updated_at
+      ON live_count (updated_at DESC)
+    `);
+
+    await this.pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_live_count_history_live_count_recorded_at
+      ON live_count_history (live_count_id, recorded_at DESC)
+    `);
+
+    await this.pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_live_count_history_recorded_at
+      ON live_count_history (recorded_at DESC)
     `);
   }
 }
