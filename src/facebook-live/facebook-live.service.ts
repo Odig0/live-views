@@ -1,9 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Browser, chromium } from 'playwright';
 import {
-  FacebookGraphListResponse,
-  FacebookGraphObjectResponse,
   FacebookLiveError,
-  FacebookLiveVideoNode,
+  FacebookLiveScrapeResult,
   FacebookLiveViewersData,
 } from './facebook-live.types';
 
@@ -13,52 +12,39 @@ interface CachedFacebookData {
 }
 
 @Injectable()
-export class FacebookLiveService {
-  private readonly graphVersion = process.env.FACEBOOK_GRAPH_API_VERSION || 'v23.0';
+export class FacebookLiveService implements OnModuleDestroy {
   private readonly ttlMs = 20_000;
   private readonly cache = new Map<string, CachedFacebookData>();
+  private browser: Browser | null = null;
+  private browserPromise: Promise<Browser> | null = null;
 
-  async getLiveViewers(videoId?: string): Promise<FacebookLiveViewersData> {
-    const pageId = process.env.FACEBOOK_PAGE_ID;
-    const accessToken = process.env.FACEBOOK_ACCESS_TOKEN;
-
-    if (!accessToken) {
-      throw new FacebookLiveError(
-        'FACEBOOK_ACCESS_TOKEN is missing in environment variables',
-        'MISSING_ACCESS_TOKEN',
-        500,
-      );
+  async onModuleDestroy() {
+    if (this.browser) {
+      await this.browser.close();
+      this.browser = null;
+      this.browserPromise = null;
     }
+  }
 
-    if (!pageId) {
-      throw new FacebookLiveError(
-        'FACEBOOK_PAGE_ID is missing in environment variables',
-        'MISSING_PAGE_ID',
-        500,
-      );
-    }
+  async getLiveViewers(source?: string): Promise<FacebookLiveViewersData> {
+    const normalizedSource = this.normalizeSource(source);
 
-    const cacheKey = videoId || `active:${pageId}`;
+    const cacheKey = normalizedSource.sourceUrl;
     const cached = this.cache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) {
       return cached.data;
     }
 
-    const targetVideo = videoId
-      ? await this.fetchVideoById(videoId, accessToken)
-      : await this.fetchActiveLiveVideo(pageId, accessToken);
-
-    const normalizedStatus = (targetVideo.status || targetVideo.broadcast_status || '').toUpperCase();
-    const concurrentViewers = Number(targetVideo.live_views || 0);
+    const scraped = await this.scrapeLiveViewers(normalizedSource);
 
     const data: FacebookLiveViewersData = {
-      pageId,
-      videoId: targetVideo.id,
-      concurrentViewers,
-      title: targetVideo.title,
-      status: normalizedStatus || undefined,
-      permalinkUrl: targetVideo.permalink_url,
-      isLive: normalizedStatus.includes('LIVE'),
+      pageId: scraped.pageId,
+      videoId: scraped.videoId,
+      concurrentViewers: scraped.viewerCount,
+      title: scraped.title,
+      status: scraped.status,
+      permalinkUrl: scraped.sourceUrl,
+      isLive: scraped.isLive,
       fetchedAt: new Date(),
     };
 
@@ -70,109 +56,200 @@ export class FacebookLiveService {
     return data;
   }
 
-  private async fetchActiveLiveVideo(
-    pageId: string,
-    accessToken: string,
-  ): Promise<FacebookLiveVideoNode> {
-    const fields = 'id,title,status,broadcast_status,live_views,permalink_url,creation_time';
-
-    const url = this.buildGraphUrl(`${encodeURIComponent(pageId)}/live_videos`, {
-      fields,
-      access_token: accessToken,
-    });
-
-    let response: Response;
-    try {
-      response = await fetch(url);
-    } catch (error) {
+  private normalizeSource(source?: string): FacebookLiveScrapeResult {
+    if (!source || source.trim() === '') {
       throw new FacebookLiveError(
-        `Failed to connect to Meta Graph API: ${error instanceof Error ? error.message : 'unknown error'}`,
-        'FACEBOOK_API_ERROR',
-        502,
+        'Facebook video URL or videoId is required',
+        'INVALID_SOURCE',
+        400,
       );
     }
 
-    let payload: FacebookGraphListResponse<FacebookLiveVideoNode>;
-    try {
-      payload = (await response.json()) as FacebookGraphListResponse<FacebookLiveVideoNode>;
-    } catch {
-      throw new FacebookLiveError('Invalid response from Meta Graph API', 'FACEBOOK_API_ERROR', 502);
-    }
+    const trimmed = source.trim();
+    const videoId = this.extractFacebookVideoId(trimmed);
+    const sourceUrl = this.buildWatchUrl(trimmed, videoId);
 
-    if (!response.ok || payload.error) {
-      throw new FacebookLiveError(
-        payload.error?.message || 'Meta Graph API returned an error',
-        'FACEBOOK_API_ERROR',
-        response.status || 502,
-      );
-    }
-
-    const liveVideo = (payload.data || []).find((video) => {
-      const status = (video.status || video.broadcast_status || '').toUpperCase();
-      return status.includes('LIVE');
-    });
-
-    if (!liveVideo) {
-      throw new FacebookLiveError(
-        'No active live video found for this Facebook page',
-        'LIVE_NOT_FOUND',
-        404,
-      );
-    }
-
-    return liveVideo;
+    return {
+      sourceUrl,
+      videoId,
+      pageId: 'facebook-public-live',
+      title: undefined,
+      status: undefined,
+      viewerCount: 0,
+      isLive: false,
+    };
   }
 
-  private async fetchVideoById(
-    videoId: string,
-    accessToken: string,
-  ): Promise<FacebookLiveVideoNode> {
-    const fields = 'id,title,status,broadcast_status,live_views,permalink_url,creation_time';
-
-    const url = this.buildGraphUrl(encodeURIComponent(videoId), {
-      fields,
-      access_token: accessToken,
-    });
-
-    let response: Response;
-    try {
-      response = await fetch(url);
-    } catch (error) {
-      throw new FacebookLiveError(
-        `Failed to connect to Meta Graph API: ${error instanceof Error ? error.message : 'unknown error'}`,
-        'FACEBOOK_API_ERROR',
-        502,
-      );
+  private extractFacebookVideoId(source: string): string {
+    if (/^\d+$/.test(source)) {
+      return source;
     }
 
-    let payload: FacebookGraphObjectResponse<FacebookLiveVideoNode> & FacebookLiveVideoNode;
     try {
-      payload =
-        (await response.json()) as FacebookGraphObjectResponse<FacebookLiveVideoNode> &
-          FacebookLiveVideoNode;
+      const url = new URL(source);
+      return (
+        url.searchParams.get('v') ||
+        url.searchParams.get('video_id') ||
+        url.pathname.split('/').filter(Boolean).pop() ||
+        source
+      );
     } catch {
-      throw new FacebookLiveError('Invalid response from Meta Graph API', 'FACEBOOK_API_ERROR', 502);
+      return source;
     }
-
-    if (!response.ok || payload.error) {
-      const status = response.status || 502;
-      throw new FacebookLiveError(
-        payload.error?.message || 'Meta Graph API returned an error',
-        status === 404 ? 'VIDEO_NOT_FOUND' : 'FACEBOOK_API_ERROR',
-        status,
-      );
-    }
-
-    if (!payload.id) {
-      throw new FacebookLiveError('Facebook video not found', 'VIDEO_NOT_FOUND', 404);
-    }
-
-    return payload;
   }
 
-  private buildGraphUrl(path: string, params: Record<string, string>): string {
-    const base = `https://graph.facebook.com/${this.graphVersion}/${path}`;
-    const query = new URLSearchParams(params);
-    return `${base}?${query.toString()}`;
+  private buildWatchUrl(source: string, videoId: string): string {
+    if (/^https?:\/\//i.test(source)) {
+      return source;
+    }
+
+    return `https://www.facebook.com/watch/live/?ref=watch_permalink&v=${encodeURIComponent(videoId)}`;
+  }
+
+  private async scrapeLiveViewers(
+    source: FacebookLiveScrapeResult,
+  ): Promise<FacebookLiveScrapeResult> {
+    const browser = await this.getBrowser();
+    const page = await browser.newPage({
+      viewport: { width: 1365, height: 900 },
+      userAgent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    });
+
+    try {
+      await page.goto(source.sourceUrl, {
+        waitUntil: 'domcontentloaded',
+        timeout: 45000,
+      });
+
+      await page.waitForTimeout(4000);
+
+      const [bodyText, html, title] = await Promise.all([
+        page.locator('body').innerText({ timeout: 10000 }).catch(() => ''),
+        page.content().catch(() => ''),
+        page.title().catch(() => ''),
+      ]);
+
+      const extracted = this.extractViewerCount(bodyText, html);
+
+      if (!extracted) {
+        throw new FacebookLiveError(
+          'Could not detect live viewer count from Facebook page',
+          'LIVE_NOT_FOUND',
+          404,
+        );
+      }
+
+      return {
+        sourceUrl: source.sourceUrl,
+        videoId: source.videoId,
+        pageId: source.pageId,
+        title: title || this.extractTitle(bodyText),
+        status: extracted.isLive ? 'LIVE' : 'UNKNOWN',
+        viewerCount: extracted.count,
+        isLive: extracted.isLive,
+      };
+    } catch (error) {
+      if (error instanceof FacebookLiveError) {
+        throw error;
+      }
+
+      throw new FacebookLiveError(
+        `Failed to scrape Facebook live viewers: ${error instanceof Error ? error.message : 'unknown error'}`,
+        'FACEBOOK_BROWSER_ERROR',
+        502,
+      );
+    } finally {
+      await page.close().catch(() => undefined);
+    }
+  }
+
+  private async getBrowser(): Promise<Browser> {
+    if (this.browser) {
+      return this.browser;
+    }
+
+    if (!this.browserPromise) {
+      this.browserPromise = chromium
+        .launch({
+          headless: true,
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+        })
+        .then((browser) => {
+          this.browser = browser;
+          return browser;
+        })
+        .catch((error) => {
+          this.browserPromise = null;
+          throw new FacebookLiveError(
+            `Unable to launch Chromium: ${error instanceof Error ? error.message : 'unknown error'}`,
+            'FACEBOOK_BROWSER_ERROR',
+            500,
+          );
+        });
+    }
+
+    return this.browserPromise;
+  }
+
+  private extractViewerCount(bodyText: string, html: string): { count: number; isLive: boolean } | null {
+    const sources = [bodyText, html].filter(Boolean);
+
+    const patterns = [
+      /([0-9][0-9.,]*)\s*([kKmMbB]?)\s*(?:personas?\s+viendo|personas?\s+est[aá]n viendo|viendo|watching(?:\s+now)?|people watching|viewers?)/i,
+      /(?:personas?\s+viendo|personas?\s+est[aá]n viendo|viendo|watching(?:\s+now)?|people watching|viewers?)\s*([0-9][0-9.,]*)\s*([kKmMbB]?)/i,
+      /"liveViewerCount"\s*:\s*"?(\d+)"?/i,
+      /"live_views"\s*:\s*"?(\d+)"?/i,
+      /"viewer_count"\s*:\s*"?(\d+)"?/i,
+    ];
+
+    for (const source of sources) {
+      for (const pattern of patterns) {
+        const match = source.match(pattern);
+        if (match) {
+          const count = this.parseViewerCount(match[1], match[2]);
+          return {
+            count,
+            isLive: true,
+          };
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private parseViewerCount(value: string, suffix?: string): number {
+    const normalized = value.replace(/\s/g, '').replace(/,/g, '');
+    const numeric = Number(normalized.replace(/[^\d.]/g, ''));
+
+    if (Number.isNaN(numeric)) {
+      return 0;
+    }
+
+    const multiplier = this.getMultiplier(suffix);
+    return Math.round(numeric * multiplier);
+  }
+
+  private getMultiplier(suffix?: string): number {
+    switch ((suffix || '').toLowerCase()) {
+      case 'k':
+        return 1_000;
+      case 'm':
+        return 1_000_000;
+      case 'b':
+        return 1_000_000_000;
+      default:
+        return 1;
+    }
+  }
+
+  private extractTitle(bodyText: string): string | undefined {
+    const lines = bodyText
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    return lines[0] || undefined;
   }
 }

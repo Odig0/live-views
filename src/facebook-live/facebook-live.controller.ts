@@ -19,9 +19,13 @@ export class FacebookLiveController {
   ) {}
 
   @Get('live-viewers')
-  async getLiveViewers(@Query('videoId') videoId?: string) {
+  async getLiveViewers(
+    @Query('videoId') videoId?: string,
+    @Query('url') url?: string,
+  ) {
     try {
-      const data = await this.facebookLiveService.getLiveViewers(videoId);
+      const source = url || videoId;
+      const data = await this.facebookLiveService.getLiveViewers(source);
 
       await this.viewersCacheService.upsertFacebook({
         pageId: data.pageId,
@@ -64,6 +68,7 @@ export class FacebookLiveController {
   @Get('live')
   async streamLiveViewers(
     @Query('videoId') videoId: string | undefined,
+    @Query('url') url: string | undefined,
     @Res() res: Response,
   ) {
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
@@ -78,7 +83,7 @@ export class FacebookLiveController {
 
     const sendUpdate = async () => {
       try {
-        const data = await this.facebookLiveService.getLiveViewers(videoId);
+        const data = await this.facebookLiveService.getLiveViewers(url || videoId);
 
         await this.viewersCacheService.upsertFacebook({
           pageId: data.pageId,
@@ -122,7 +127,7 @@ export class FacebookLiveController {
 
     const interval = setInterval(async () => {
       await sendUpdate();
-    }, 10000);
+    }, 20000);
 
     res.on('close', () => {
       clearInterval(interval);

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-17T16:01:36.631Z",
+  "updatedAt": "2026-04-17T20:22:44.369Z",
   "tiktok": {
     "pubgmobile.np.official": {
       "username": "pubgmobile.np.official",
@@ -18,5 +18,16 @@
       "updatedAt": "2026-04-17T16:01:36.631Z"
     }
   },
-  "facebook": {}
+  "facebook": {
+    "live": {
+      "pageId": "facebook-public-live",
+      "videoId": "live",
+      "concurrentViewers": 268,
+      "title": "Facebook Live | Facebook",
+      "status": "LIVE",
+      "permalinkUrl": "https://www.facebook.com/watch/live/?ref=watch_permalink",
+      "isLive": true,
+      "updatedAt": "2026-04-17T20:22:44.369Z"
+    }
+  }
 }
